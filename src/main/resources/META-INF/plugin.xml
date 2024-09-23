@@ -1,0 +1,85 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
+    <id>com.riskit.RiskIt</id>
+
+    <!-- Public plugin name should be written in Title Case.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
+    <name>RiskIt</name>
+
+    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
+    <vendor email="" url="">thapr0digy</vendor>
+
+    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
+         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
+         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
+    <description>
+        A plugin to add risk information to selected code.
+    </description>
+
+    <!-- Product and plugin compatibility requirements.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <actions>
+        <group id="AddToRiskIt" text="Add To RiskIT" popup="true">
+            <add-to-group group-id="EditorPopupMenu" anchor="first" />
+        </group>
+        <!-- Define subgroups for Risk Level, Maturity Level, and Vulnerability Class -->
+        <group id="AddToRiskIt.RiskLevel" text="Risk Level" popup="true">
+            <add-to-group group-id="AddToRiskIt" anchor="first" />
+        </group>
+        <group id="AddToRiskIt.MaturityLevel" text="Maturity Level" popup="true">
+            <add-to-group group-id="AddToRiskIt" anchor="after" relative-to-action="AddToRiskIt.RiskLevel" />
+        </group>
+        <group id="AddToRiskIt.VulnerabilityClass" text="Vulnerability Class" popup="true">
+            <add-to-group group-id="AddToRiskIt" anchor="after" relative-to-action="AddToRiskIt.MaturityLevel" />
+        </group>
+
+        <!-- Add actions to the Risk Level group -->
+        <action id="RiskLevelCritical" class="com.riskit.riskit.RiskLevelAction" text="Critical">
+            <add-to-group group-id="AddToRiskIt.RiskLevel" anchor="first" />
+        </action>
+        <action id="RiskLevelHigh" class="com.riskit.riskit.RiskLevelAction" text="High">
+            <add-to-group group-id="AddToRiskIt.RiskLevel" anchor="after" relative-to-action="RiskLevelCritical" />
+        </action>
+        <action id="RiskLevelMedium" class="com.riskit.riskit.RiskLevelAction" text="Medium">
+            <add-to-group group-id="AddToRiskIt.RiskLevel" anchor="after" relative-to-action="RiskLevelHigh" />
+        </action>
+        <action id="RiskLevelLow" class="com.riskit.riskit.RiskLevelAction" text="Low">
+            <add-to-group group-id="AddToRiskIt.RiskLevel" anchor="after" relative-to-action="RiskLevelMedium" />
+        </action>
+
+        <!-- Add actions to the Maturity Level group -->
+        <action id="MaturityLevelInitial" class="com.riskit.riskit.MaturityLevelAction" text="Initial">
+            <add-to-group group-id="AddToRiskIt.MaturityLevel" anchor="first" />
+        </action>
+        <action id="MaturityLevelDefined" class="com.riskit.riskit.MaturityLevelAction" text="Defined">
+            <add-to-group group-id="AddToRiskIt.MaturityLevel" anchor="after" relative-to-action="MaturityLevelInitial" />
+        </action>
+        <action id="MaturityLevelOptimized" class="com.riskit.riskit.MaturityLevelAction" text="Optimized">
+            <add-to-group group-id="AddToRiskIt.MaturityLevel" anchor="after" relative-to-action="MaturityLevelDefined" />
+        </action>
+        <action id="MaturityLevelMature" class="com.riskit.riskit.MaturityLevelAction" text="Mature">
+            <add-to-group group-id="AddToRiskIt.MaturityLevel" anchor="after" relative-to-action="MaturityLevelOptimized" />
+        </action>
+
+        <!-- Add actions to the Vulnerability Class group -->
+        <action id="VulnerabilityClassAuthentication" class="com.riskit.riskit.VulnerabilityClassAction" text="Authentication">
+            <add-to-group group-id="AddToRiskIt.VulnerabilityClass" anchor="first" />
+        </action>
+        <action id="VulnerabilityClassAuthorization" class="com.riskit.riskit.VulnerabilityClassAction" text="Authorization">
+            <add-to-group group-id="AddToRiskIt.VulnerabilityClass" anchor="after" relative-to-action="VulnerabilityClassAuthentication" />
+        </action>
+        <action id="VulnerabilityClassSSRF" class="com.riskit.riskit.VulnerabilityClassAction" text="SSRF">
+            <add-to-group group-id="AddToRiskIt.VulnerabilityClass" anchor="after" relative-to-action="VulnerabilityClassAuthorization" />
+        </action>
+        <action id="VulnerabilityClassCustom" class="com.riskit.riskit.VulnerabilityClassAction" text="Custom">
+            <add-to-group group-id="AddToRiskIt.VulnerabilityClass" anchor="after" relative-to-action="VulnerabilityClassSSRF" />
+        </action>
+    </actions>
+    <!-- Extension points defined by the plugin.
+         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
+    <extensions defaultExtensionNs="com.intellij">
+    </extensions>
+</idea-plugin>
