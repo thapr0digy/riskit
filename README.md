@@ -3,7 +3,7 @@
 #### Future Ideas
 - [X] Add support for multiple vulnerability classes
 - [ ] Add a popup/tooltip which highlights the section in the file
-- [ ] Add support for Custom vulnerability classes
+- [X] Add support for custom vulnerability classes
 - [ ] Add a dialog for adding all values together
 - [ ] Add support adding custom values
 - [ ] Add support for tagging

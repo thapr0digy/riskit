@@ -32,7 +32,8 @@ class MaturityLevelAction() : AnAction() {
                                 trimmedSelection.endColumn,
                                 null,
                                 maturityLevel,
-                                null)
+                                null
+                            )
                         )
                     }
                 }
