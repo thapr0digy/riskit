@@ -1,7 +1,12 @@
 package com.riskit.riskit
 
 import com.intellij.openapi.editor.Document
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.SelectionModel
+import com.intellij.openapi.editor.markup.HighlighterLayer
+import com.intellij.openapi.editor.markup.HighlighterTargetArea
+import com.intellij.openapi.editor.markup.TextAttributes
+import com.intellij.ui.JBColor
 
 object EditorUtil {
     data class TrimmedSelection(val startLine: Int, val startColumn: Int, val endLine: Int, val endColumn: Int)
@@ -20,11 +25,24 @@ object EditorUtil {
             endOffset--
         }
 
-        val startLine = document.getLineNumber(startOffset) + 1
-        val startColumn = startOffset - document.getLineStartOffset(startLine - 1) + 1
-        val endLine = document.getLineNumber(endOffset) + 1
-        val endColumn = endOffset - document.getLineStartOffset(endLine -1) + 1
+        val startLine = document.getLineNumber(startOffset)
+        val startColumn = startOffset - document.getLineStartOffset(startLine)
+        val endLine = document.getLineNumber(endOffset)
+        val endColumn = endOffset - document.getLineStartOffset(endLine)
 
         return TrimmedSelection(startLine, startColumn, endLine, endColumn)
+    }
+
+    fun highlightText(editor: Editor, startOffset: Int, endOffset: Int) {
+        val markupModel = editor.markupModel
+        val textAttributes = TextAttributes()
+        textAttributes.backgroundColor = JBColor.GREEN.darker()
+        markupModel.addRangeHighlighter(
+            startOffset,
+            endOffset,
+            HighlighterLayer.SELECTION,
+            textAttributes,
+            HighlighterTargetArea.EXACT_RANGE
+        )
     }
 }

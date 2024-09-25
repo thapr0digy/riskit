@@ -9,6 +9,8 @@ import java.io.File
 import java.io.FileWriter
 import java.io.IOException
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFileManager
 import java.io.FileReader
 
 object RiskItUtil {
@@ -97,6 +99,13 @@ object RiskItUtil {
         FileWriter(outputFile).use { writer ->
             gson.toJson(jsonArray, writer)
         }
+
+        // Refresh the virtual file system to ensure changes are recognized
+        val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(outputFile)
+        virtualFile?.let {
+            VirtualFileManager.getInstance().syncRefresh()
+        }
+
     }
     fun loadRiskInformation(project: Project): List<RiskInformation> {
         val projectBaseDir = project.basePath ?: throw IllegalStateException("Project base path is null")
