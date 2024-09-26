@@ -45,4 +45,11 @@ object EditorUtil {
             HighlighterTargetArea.EXACT_RANGE
         )
     }
+
+    fun getHighlightTextAttributes(): TextAttributes {
+        val textAttributes = TextAttributes()
+        textAttributes.backgroundColor = JBColor.YELLOW
+        return textAttributes
+    }
+
 }

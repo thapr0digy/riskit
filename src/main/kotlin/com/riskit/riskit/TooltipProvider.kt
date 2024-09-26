@@ -21,7 +21,6 @@ class TooltipProvider(private val project: Project) {
     private var riskInformation = RiskItUtil.loadRiskInformation(project)
     private val gutterIcons = ConcurrentHashMap<Int, RangeHighlighter>()
 
-
     fun registerTooltip() {
         val editorFactory = EditorFactory.getInstance()
         for (editor in editorFactory.allEditors) {
@@ -30,7 +29,7 @@ class TooltipProvider(private val project: Project) {
                     val editor = e.editor
                     if (e.area == EditorMouseEventArea.LINE_NUMBERS_AREA) {
                         val logicalPosition = editor.xyToLogicalPosition(e.mouseEvent.point)
-                        val lineNumber = logicalPosition.line + 1
+                        val lineNumber = logicalPosition.line
                         val virtualFile = FileDocumentManager.getInstance().getFile(editor.document)
                         val matchingRiskInfo = riskInformation.find {
                             it.filename == virtualFile?.path?.substringAfter(project.basePath ?: "")
@@ -41,25 +40,19 @@ class TooltipProvider(private val project: Project) {
                             showTooltip(editor, e.mouseEvent.point, tooltipText)
                             highlightText(editor, matchingRiskInfo)
                         }
+                    } else if (e.area == EditorMouseEventArea.EDITING_AREA) {
+                        val logicalPosition = editor.xyToLogicalPosition(e.mouseEvent.point)
+                        val offset = editor.logicalPositionToOffset(logicalPosition)
+                        val highlighter = gutterIcons.values.find { it.startOffset <= offset && it.endOffset >= offset }?.gutterIconRenderer as? RiskItGutterIconRenderer
+                        highlighter?.highlightText()
+                    } else {
+                        gutterIcons.values.forEach { it.gutterIconRenderer?.let { renderer ->
+                            (renderer as? RiskItGutterIconRenderer)?.clearHighlight()
+                        }}
                     }
                 }
             })
         }
-    }
-
-    fun refreshHighlights() {
-        riskInformation = RiskItUtil.loadRiskInformation(project)
-        highlightLoadedRiskInformation()
-    }
-
-    // Update clearHighlights to clear the map
-    fun clearHighlights() {
-        val editorFactory = EditorFactory.getInstance()
-        for (editor in editorFactory.allEditors) {
-            val markupModel = editor.markupModel
-            markupModel.removeAllHighlighters()
-        }
-        gutterIcons.clear()
     }
 
     private fun addOrUpdateGutterIcon(editor: Editor, info: RiskItUtil.RiskInformation) {
@@ -82,23 +75,8 @@ class TooltipProvider(private val project: Project) {
             null,
             HighlighterTargetArea.EXACT_RANGE
         )
-        highlighter.gutterIconRenderer = RiskItGutterIconRenderer(tooltipText, startOffset, endOffset)
+        highlighter.gutterIconRenderer = RiskItGutterIconRenderer(tooltipText, startOffset, endOffset, editor)
         gutterIcons[startOffset] = highlighter
-    }
-
-    // Update highlightLoadedRiskInformation to call addOrUpdateGutterIcon
-    fun highlightLoadedRiskInformation() {
-        val editorFactory = EditorFactory.getInstance()
-        for (editor in editorFactory.allEditors) {
-            val virtualFile = FileDocumentManager.getInstance().getFile(editor.document)
-            val matchingRiskInfos = riskInformation.filter {
-                it.filename == virtualFile?.path?.substringAfter(project.basePath ?: "")
-            }
-            for (info in matchingRiskInfos) {
-                highlightText(editor, info)
-                addOrUpdateGutterIcon(editor, info)
-            }
-        }
     }
 
     private fun buildTooltipText(info: RiskItUtil.RiskInformation): String {
@@ -118,10 +96,40 @@ class TooltipProvider(private val project: Project) {
         val location = editor.contentComponent.locationOnScreen
         balloon.show(RelativePoint.fromScreen(Point(location.x + point.x, location.y + point.y)), Balloon.Position.below)
     }
+    // Update highlightLoadedRiskInformation to call addOrUpdateGutterIcon
+    fun highlightLoadedRiskInformation() {
+        val editorFactory = EditorFactory.getInstance()
+        for (editor in editorFactory.allEditors) {
+            val virtualFile = FileDocumentManager.getInstance().getFile(editor.document)
+            val matchingRiskInfos = riskInformation.filter {
+                it.filename == virtualFile?.path?.substringAfter(project.basePath ?: "")
+            }
+            for (info in matchingRiskInfos) {
+                highlightText(editor, info)
+                addOrUpdateGutterIcon(editor, info)
+            }
+        }
+    }
 
     private fun highlightText(editor: Editor, info: RiskItUtil.RiskInformation) {
         val startOffset = editor.document.getLineStartOffset(info.startLine)
         val endOffset = editor.document.getLineEndOffset(info.endLine)
         EditorUtil.highlightText(editor, startOffset, endOffset)
     }
+
+    fun refreshHighlights() {
+        riskInformation = RiskItUtil.loadRiskInformation(project)
+        highlightLoadedRiskInformation()
+    }
+
+    // Update clearHighlights to clear the map
+    fun clearHighlights() {
+        val editorFactory = EditorFactory.getInstance()
+        for (editor in editorFactory.allEditors) {
+            val markupModel = editor.markupModel
+            markupModel.removeAllHighlighters()
+        }
+        gutterIcons.clear()
+    }
+
 }
